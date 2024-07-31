@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mini Project Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #000;
+        }
+        .header, .footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .header img, .footer img {
+            width: 100px;
+            height: auto;
+        }
+        .logo-container-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .logo-middle {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .logo-container-right {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .title {
+            color: red;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .project-title {
+            font-size: 28px;
+            margin: 10px 0;
+        }
+        .names {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+        .supervisor {
+            margin-top: 40px;
+            font-size: 18px;
+        }
+        #result div, #transformation div {
+            display: inline-block;
+            margin: 10px;
+        }
+        #result img, #transformation img {
+            max-width: 300px;
+            height: auto;
+            transition: transform 0.3s;
+        }
+        #colorized_image, #transformed_image {
+            transition: transform 0.3s;
+        }
+        .zoom-controls {
+            margin: 10px;
+        }
+        .zoom-controls button {
+            margin: 0 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo-container-left">
+                <img src="{{ url_for('static', filename='p1.jpg') }}" alt="Logo 1">
+                <img src="{{ url_for('static', filename='college.jpg') }}" alt="Logo 2">
+            </div>
+            <img src="{{ url_for('static', filename='P2.jpg') }}" alt="Logo 3" class="logo-middle">
+            <div class="logo-container-right">
+                <img src="{{ url_for('static', filename='P3.jpg') }}" alt="Logo 4">
+                <img src="{{ url_for('static', filename='cse.jpg') }}" alt="Logo 5">
+            </div>
+        </div>
+
+        <h1>SJB INSTITUTE OF TECHNOLOGY</h1>
+        <p>No.67, BGS Health & Education City, Dr.Vishnuvardhan Rd, Kengeri, Bengaluru, Karnataka 560060</p>
+        <p>An Autonomous Institute under VTU</p>
+        <p>Approved by AICTE - New Delhi, Accredited by NAAC A+, Accredited by NBA</p>
+
+        <div class="title">A MINI PROJECT ON</div>
+        <div class="project-title">“COLORIZATION OF BLACK AND WHITE IMAGES”</div>
+
+        <div class="names">
+            By<br>
+            S MOHAK GOWDA [1JB21CS123]<br>
+            SHREYAS K [1JB21CS142]
+        </div>
+
+        <div class="supervisor">
+            Under the Guidance of<br>
+            Dr. Bindiya M K<br>
+            Professor,<br>
+            Dept.of CSE, SJBIT
+        </div><br><br>
+
+        <!-- Form for File Upload -->
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="image" accept="image/*" required>
+            <button type="submit">Colorize the image</button>
+        </form>
+
+        <div id="result">
+            <!-- Zoom controls will be dynamically added here -->
+        </div>
+
+        <!-- Zoom Controls (visible only after colorizing) -->
+        <div id="zoom-controls" class="zoom-controls" style="display: none;">
+            <button onclick="zoomIn()">Zoom In</button>
+            <button onclick="zoomOut()">Zoom Out</button>
+            <button onclick="resetZoom()">Reset Zoom</button>
+        </div>
+
+        <!-- Form for Applying Transformations -->
+        <div id="transformation" style="display: none;">
+            <h2>Apply Transformations</h2>
+            <form id="transformForm">
+                <div>
+                    <label for="translate_x">Translate X:</label>
+                    <input type="number" id="translate_x" name="translate_x" value="0">
+                </div>
+                <div>
+                    <label for="translate_y">Translate Y:</label>
+                    <input type="number" id="translate_y" name="translate_y" value="0">
+                </div>
+                <div>
+                    <label for="rotate_angle">Rotate Angle:</label>
+                    <input type="number" id="rotate_angle" name="rotate_angle" value="0" step="any">
+                </div>
+                <input type="hidden" id="colorized_image_path">
+                <button type="submit">Apply Transformations</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let zoomLevel = 1;
+        let currentImage = null;
+
+        function zoomIn() {
+            zoomLevel += 0.1;
+            applyZoom();
+        }
+
+        function zoomOut() {
+            zoomLevel = Math.max(0.1, zoomLevel - 0.1);
+            applyZoom();
+        }
+
+        function resetZoom() {
+            zoomLevel = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            if (currentImage) {
+                currentImage.style.transform = `scale(${zoomLevel})`;
+            }
+        }
+
+        function handleKeyboardEvent(event) {
+            switch(event.key.toLowerCase()) {
+                case 'z':
+                    zoomIn();
+                    break;
+                case 'o':
+                    zoomOut();
+                    break;
+                case 'r':
+                    resetZoom();
+                    break;
+            }
+        }
+
+        document.addEventListener('keydown', handleKeyboardEvent);
+
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+
+            fetch('/run-script', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.colorized_image) {
+                    document.getElementById('result').innerHTML = `
+                        <h1>${data.message}</h1>
+                        <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+                            <div style="margin: 10px;">
+                                <h2>Input Image</h2>
+                                <img src="${data.input_image}" alt="Input Image">
+                            </div>
+                            <div style="margin: 10px;">
+                                <h2>Colorized Image</h2>
+                                <img id="colorized_image" src="${data.colorized_image}" alt="Colorized Image">
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Set current image to colorized image
+                    currentImage = document.getElementById('colorized_image');
+
+                    // Show zoom controls and transformation options
+                    document.getElementById('zoom-controls').style.display = 'block';
+                    document.getElementById('transformation').style.display = 'block';
+                    document.getElementById('colorized_image_path').value = data.colorized_image;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('transformForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(this);
+            formData.append('colorized_image', document.getElementById('colorized_image_path').value);
+
+            fetch('/transform-image', {
+                method: 'POST',
+                body: JSON.stringify(Object.fromEntries(formData)),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.transformed_image) {
+                    document.getElementById('result').innerHTML = `
+                        <h1>${data.message}</h1>
+                        <div style="display: flex; justify-content: center; flex-wrap: wrap;">
+                            <div style="margin: 10px;">
+                                <h2>Transformed Image</h2>
+                                <img id="transformed_image" src="${data.transformed_image}" alt="Transformed Image">
+                            </div>
+                        </div>
+                    `;
+
+                    // Set current image to transformed image
+                    currentImage = document.getElementById('transformed_image');
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
